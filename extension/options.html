@@ -5,21 +5,42 @@
     <title>Paramètres – Esports Schedule</title>
     <style>
       body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif; padding: 16px; }
-      label { display:block; margin-bottom: 8px; }
-      input { width: 100%; padding: 8px; margin-bottom: 12px; }
+      h1 { margin-top: 0; }
+      .row { display: grid; grid-template-columns: 1.4fr 0.8fr 0.8fr 1.6fr auto; gap: 8px; margin-bottom: 8px; }
+      input[type="text"] { width: 100%; padding: 6px; }
+      input[type="color"] { width: 100%; height: 36px; padding: 0; }
       button { padding: 8px 12px; }
-      .muted { color:#666; font-size: 12px; }
+      .muted { color:#666; font-size: 12px; margin-top: 12px; }
+      .list { margin-top: 8px; }
+      .item { border: 1px solid #eee; padding: 8px; border-radius: 10px; margin-bottom: 8px; }
     </style>
   </head>
   <body>
     <h1>Paramètres</h1>
-    <label>Backend URL
-      <input id="backendUrl" type="text" placeholder="http://localhost:8080" />
-    </label>
-    <button id="saveBtn">Enregistrer</button>
-    <p class="muted">L’extension lira <code>/api/schedule</code> sur cette URL.</p>
 
-    <!-- IMPORTANT: pas de JS inline en MV3 -->
+    <h3>Backend</h3>
+    <div class="row">
+      <input id="backendUrl" type="text" placeholder="http://localhost:8080" />
+      <div></div><div></div><div></div>
+      <button id="saveBackend">Enregistrer</button>
+    </div>
+
+    <h3>Clubs suivis</h3>
+    <div class="row">
+      <input id="clubName" type="text" placeholder="Nom du club (ex: Team Vitality)" />
+      <input id="primaryColor" type="color" value="#F8D000" />
+      <input id="secondaryColor" type="color" value="#1A1A1A" />
+      <input id="aliases" type="text" placeholder="Alias séparés par des virgules (ex: Vitality, Team_Vitality)" />
+      <button id="addClub">Ajouter</button>
+    </div>
+
+    <div id="clubList" class="list"></div>
+
+    <p class="muted">
+      • Les alias aident à reconnaître un club si le nom varie (ex: “Vitality”).<br/>
+      • Quand deux clubs suivis s’affrontent, la carte est **50/50** avec leurs couleurs principales.
+    </p>
+
     <script src="options.js"></script>
   </body>
 </html>

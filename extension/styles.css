@@ -50,3 +50,111 @@ h1 { font-size: 16px; margin: 0 0 2px 0; }
 .ftr .row { display: flex; align-items: center; justify-content: space-between; }
 a { color: inherit; }
 .empty { color: var(--muted); text-align: center; padding: 12px; border: 1px dashed var(--line); border-radius: var(--rad); }
+
+.card { box-shadow: 0 1px 0 rgba(0,0,0,.04); }
+.card .teams { text-shadow: 0 1px 0 rgba(255,255,255,.3); }
+
+/* --- Cartes améliorées --- */
+.card {
+  position: relative;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+/* teinte d’un seul club (déjà utilisé) */
+.card.tinted {}
+
+/* split 50/50 */
+.card.split {
+  background: linear-gradient(90deg, var(--c1, #ddd) 0 50%, var(--c2, #eee) 50% 100%);
+  border: 1px solid rgba(0,0,0,.08);
+}
+
+/* bandes de lisibilité (dégradé transparent) */
+.card .veil {
+  position: absolute; inset: 0;
+  background:
+    linear-gradient(0deg, rgba(255,255,255,.08), rgba(255,255,255,.08));
+  pointer-events: none;
+}
+
+/* contenu */
+.card .inner { position: relative; padding: 10px; z-index: 1; }
+.card .row {
+  display: grid; grid-template-columns: 1fr auto;
+  align-items: baseline; gap: 8px;
+}
+.card .teams { font-weight: 700; letter-spacing: .2px; }
+.card .meta { color: #0f172a; opacity: .85; font-size: 12px; margin-top: 4px; }
+
+/* badge jeu à droite */
+.badge {
+  font-size: 11px; font-weight: 700; letter-spacing: .3px;
+  padding: 2px 8px; border-radius: 999px;
+  background: rgba(255,255,255,.7); border: 1px solid rgba(0,0,0,.08);
+}
+
+/* layout des équipes en split : gauche/droite */
+.card.split .teams {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 8px; font-weight: 800;
+}
+.card.split .teams .left { text-align: left; }
+.card.split .teams .right { text-align: right; }
+
+/* contraste texte : ombre légère sur fonds vifs */
+.card .teams, .card .meta, .streams a {
+  text-shadow: 0 1px 0 rgba(255,255,255,.35);
+}
+.streams a { font-weight: 600; }
+
+/* teinte single-club lisible */
+.card.tinted {
+  background: color-mix(in srgb, var(--c1, #f7f7f7) 18%, white);
+  border: 1px solid color-mix(in srgb, var(--c1, #f7f7f7) 55%, #0000);
+}
+
+/* Centrage vertical et horizontal du contenu dans les 50/50 */
+.card.split .inner {
+  display: flex;
+  flex-direction: column;
+  justify-content: center; /* vertical */
+  align-items: center;     /* horizontal */
+  text-align: center;
+  min-height: 100px; /* ou plus si besoin */
+}
+
+/* Teams en 50/50 centrées horizontalement */
+.card.split .teams {
+  display: flex;
+  justify-content: center;
+  gap: 20px; /* espace entre les noms */
+}
+
+.card.split .teams .left,
+.card.split .teams .right {
+  text-align: center;
+}
+
+/* Badge centré au-dessus des noms en 50/50 */
+.card.split .row {
+  grid-template-columns: 1fr;      /* une seule colonne */
+  justify-items: center;           /* centre le badge */
+}
+
+.card.split .row .badge {
+  margin-bottom: 6px;              /* petit espace au-dessus des noms */
+}
+
+/* Les deux noms restent chacun dans leur moitié, mais centrés dans leur zone */
+.card.split .teams {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  width: 100%;
+}
+
+.card.split .teams .left,
+.card.split .teams .right {
+  text-align: center;              /* centré dans chaque moitié */
+}
