@@ -1,0 +1,19 @@
+{
+  "matches": [
+    {
+      "id": "demo-1",
+      "game": "valorant",
+      "tournament": "VCT EMEA Stage 2",
+      "stage": "Group B",
+      "bo": "BO3",
+      "opponent1": "Team Vitality",
+      "opponent2": "Giants",
+      "date": "2025-08-15T17:00:00Z",
+      "streams": {
+        "twitch": ["https://twitch.tv/vct_emea"],
+        "youtube": ["https://youtube.com/@valesports"]
+      },
+      "url": "https://liquipedia.net/valorant/Demo_Page"
+    }
+  ]
+}

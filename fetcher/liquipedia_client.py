@@ -1,106 +1,93 @@
 import os
 import time
+import json
 import requests
 from dotenv import load_dotenv
 
 load_dotenv()
 
-# ---- Config générale ----
-LPDB_BASE = "https://api.liquipedia.net/api"
+LPDB_BASE = "https://api.liquipedia.net/api/v1"
 MW_BASE = "https://liquipedia.net"
-
-USER_AGENT = os.getenv(
-    "LIQUIPEDIA_USER_AGENT",
-    "EsportsCalendarExtension/0.1 (contact: thomasballini34@gmail.com)"
-)
-API_KEY = os.getenv("LIQUIPEDIA_API_KEY")
 RATE_SECONDS = 2
 
 GAME_TO_WIKI = {
     "valorant": "valorant",
     "league_of_legends": "leagueoflegends",
     "rocket_league": "rocketleague",
-    "counter_strike_2": "counterstrike"
+    "counter_strike_2": "counterstrike",
 }
+
+DEBUG_DIR = os.path.normpath(os.path.join(os.path.dirname(__file__), "..", "public", "data"))
+SAMPLES_DIR = os.path.normpath(os.path.join(os.path.dirname(__file__), "samples"))
+
+def _ua():
+    ua = os.getenv("LIQUIPEDIA_USER_AGENT", "").strip()
+    return ua or "EsportsScheduleExtension/0.1 (contact: you@example.com)"
 
 class LiquipediaClient:
     def __init__(self):
-        self.s = requests.Session()
-        self.s.headers.update({
-            "User-Agent": USER_AGENT,
+        self.api_key = os.getenv("LIQUIPEDIA_API_KEY", "").strip()
+        self.demo_mode = os.getenv("DEMO_MODE", "0").strip() == "1"
+        self.session = requests.Session()
+        self.session.headers.update({
+            "User-Agent": _ua(),
             "Accept": "application/json",
-            "Accept-Encoding": "gzip"
+            "Accept-Encoding": "gzip",
         })
 
-    def upcoming_matches_lpdb(self, wiki: str, team_name: str):
-        if not API_KEY:
-            raise RuntimeError("LPDB API key missing")
-
+    def _sleep(self):
         time.sleep(RATE_SECONDS)
-        url = f"{LPDB_BASE}/v1/match"
+
+    # ---------------- LPDB ----------------
+    def _upcoming_matches_lpdb(self, wiki: str, team_name: str):
+        self._sleep()
+        url = f"{LPDB_BASE}/match"
         params = {
             "wiki": wiki,
-            "team": team_name,
-            "status": "upcoming",
-            "limit": 200
+            "conditions": f"(opponent1='{team_name}' OR opponent2='{team_name}')",
+            "order": "date ASC",
+            "limit": 100,
         }
-        headers = {"Authorization": f"Bearer {API_KEY}"}
-        r = self.s.get(url, params=params, headers=headers, timeout=25)
+        headers = {"Authorization": f"Bearer {self.api_key}"}
+        r = self.session.get(url, params=params, headers=headers, timeout=25)
         r.raise_for_status()
         return r.json()
 
-    def upcoming_matches_mediawiki(self, wiki: str, team_name: str):
-        def _cargo_query(params):
-            time.sleep(RATE_SECONDS)
-            url = f"{MW_BASE}/{wiki}/api.php"
-            r = self.s.get(url, params=params, timeout=25)
-            r.raise_for_status()
-            return r.json()
-
-        # Tentative match2
-        params_match2 = {
-            "action": "cargoquery",
-            "tables": "match2 = m, match2opponent = o",
-            "fields": "m.pagename, m.utcStartTime, m.opponent1, m.opponent2, m.stream, m.bestof, m.tournament, o.name",
-            "where": f"(m.opponent1='{team_name}' OR m.opponent2='{team_name}')",
-            "join_on": "o._rowID = m._rowID",
-            "order_by": "m.utcStartTime ASC",
-            "limit": "50",
-            "format": "json"
-        }
-        try:
-            data = _cargo_query(params_match2)
-            if isinstance(data, dict) and data.get("cargoquery"):
+    # ------------- DEMO MODE -------------
+    def _demo_payload_for_wiki(self, wiki: str):
+        # Pour l’instant, on ne fournit qu’un exemple Valorant
+        if wiki == "valorant":
+            path = os.path.join(SAMPLES_DIR, "valorant_demo_lpdb.json")
+            try:
+                with open(path, "r", encoding="utf-8") as f:
+                    data = json.load(f)
                 return data
-        except requests.HTTPError:
-            pass
+            except Exception as e:
+                print(f"[DEMO] Impossible de charger {path}: {e}")
+        return {"matches": []}
 
-        # Fallback MatchSchedule
-        params_ms = {
-            "action": "cargoquery",
-            "tables": "MatchSchedule = MS, MatchScheduleGame = MSG",
-            "fields": "MS.Page, MS.DateTime_UTC, MS.Team1, MS.Team2, MS.Stream, MS.BestOf, MS.Tournament",
-            "where": f"(MS.Team1='{team_name}' OR MS.Team2='{team_name}')",
-            "join_on": "MSG._rowID = MS._rowID",
-            "order_by": "MS.DateTime_UTC ASC",
-            "limit": "50",
-            "format": "json"
-        }
-        return _cargo_query(params_ms)
-
+    # ------------- Méthode publique -------------
     def upcoming_matches(self, game_slug: str, team_name: str):
         wiki = GAME_TO_WIKI.get(game_slug)
         if not wiki:
-            raise ValueError(f"Unknown game slug: {game_slug}")
+            raise ValueError(f"Jeu inconnu: {game_slug}")
 
-        try:
-            if API_KEY:
-                return self.upcoming_matches_lpdb(wiki, team_name)
-            return self.upcoming_matches_mediawiki(wiki, team_name)
-        except requests.HTTPError as e:
-            if API_KEY:
-                try:
-                    return self.upcoming_matches_mediawiki(wiki, team_name)
-                except Exception:
-                    raise e
-            raise
+        # 1) Si DEMO_MODE → renvoie l’exemple local (pour tester l’affichage)
+        if self.demo_mode:
+            print(f"[DEMO] Mode démo actif pour {wiki}.")
+            return self._demo_payload_for_wiki(wiki)
+
+        # 2) Si on a une clé → LPDB (recommandé et nécessaire sur Valorant)
+        if self.api_key:
+            return self._upcoming_matches_lpdb(wiki, team_name)
+
+        # 3) Sinon, pas de Cargo pour Valorant (désactivé) -> on informe clairement
+        if wiki == "valorant":
+            raise RuntimeError(
+                "Le wiki Valorant n'autorise pas Cargo API publiquement. "
+                "Active DEMO_MODE=1 pour tester ou attends ta clé LPDB."
+            )
+
+        # 4) Pour d’autres wikis, on pourrait tenter Cargo ici s’il est actif.
+        #    Mais comme tu veux surtout Valorant, on s’arrête là pour rester propre vis-à-vis des règles.
+        return {"matches": []}
