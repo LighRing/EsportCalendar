@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Esports Schedule</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <header class="hdr">
+      <div>
+        <h1>Esports Schedule</h1>
+        <small id="club"></small>
+      </div>
+      <button id="refreshBtn" title="Rafraîchir">↻</button>
+    </header>
+
+    <section class="bar">
+      <label>Jeu :
+        <select id="gameFilter">
+          <option value="ALL">Tous</option>
+          <option value="VALORANT">VALORANT</option>
+          <option value="LEAGUE_OF_LEGENDS">LEAGUE OF LEGENDS</option>
+          <option value="ROCKET_LEAGUE">ROCKET LEAGUE</option>
+          <option value="COUNTER_STRIKE_2">COUNTER-STRIKE 2</option>
+        </select>
+      </label>
+    </section>
+
+    <ul id="list" class="list"></ul>
+
+    <footer class="ftr">
+      <div class="row">
+        <span class="source">Données : <a href="https://liquipedia.net/" target="_blank">Liquipedia</a> (CC-BY-SA 3.0)</span>
+        <a id="settingsLink" href="#" title="Paramètres">⚙</a>
+      </div>
+    </footer>
+
+    <script src="popup.js"></script>
+  </body>
+</html>

@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="utf-8" />
+    <title>Paramètres – Esports Schedule</title>
+    <style>
+      body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif; padding: 16px; }
+      label { display:block; margin-bottom: 8px; }
+      input { width: 100%; padding: 8px; margin-bottom: 12px; }
+      button { padding: 8px 12px; }
+      .muted { color:#666; font-size: 12px; }
+    </style>
+  </head>
+  <body>
+    <h1>Paramètres</h1>
+    <label>Backend URL
+      <input id="backendUrl" type="text" placeholder="http://localhost:8080" />
+    </label>
+    <button id="saveBtn">Enregistrer</button>
+    <p class="muted">L’extension lira <code>/api/schedule</code> sur cette URL.</p>
+
+    <!-- IMPORTANT: pas de JS inline en MV3 -->
+    <script src="options.js"></script>
+  </body>
+</html>
